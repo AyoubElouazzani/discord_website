@@ -23,18 +23,35 @@
       </div>
       <div class="layout__body">
         <form action="" method="POST">
-          {% csrf_token %} {% for field in form %}
+          {% csrf_token %}
           <div class="form__group">
-            <label for="room_name">{{field.label}}</label>
-            {{field}}
-            <!-- <input
+            <label for="room_topic">Enter a topic</label>
+            <input required type="text" name="topic" list="topic-list" />
+            <datalist id="topic-list">
+              <select id="room_topic">
+                {% for topic in topics %}
+                <option value="{{topic.name}}">{{topic.name}}</option>
+                {% endfor %}
+              </select>
+            </datalist>
+          </div>
+
+          <div class="form__group">
+            <label for="room_topic">Room Name</label>
+            {{form.name}}
+          </div>
+
+          <div class="form__group">
+            <label for="room_description">Room Description</label>
+            {{form.description}}
+          </div>
+          <!-- <input
               id="room_name"
               name="room_name"
               type="text"
               placeholder="E.g. Mastering Python + Django"
             /> -->
-          </div>
-          {% endfor %}
+
           <!-- <div class="form__group">
             <label for="room_topic">Topic</label>
             <input
@@ -44,13 +61,7 @@
               id="room_topic"
               list="topic-list"
             />
-            <datalist id="topic-list">
-              <select id="room_topic">
-                <option value="">Select your topic</option>
-                <option value="Python">Python</option>
-                <option value="Django">Django</option>
-              </select>
-            </datalist>
+            
           </div> -->
           <div class="form__action">
             <a class="btn btn--dark" href="index.html">Cancel</a>
