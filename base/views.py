@@ -1,12 +1,11 @@
 from django.contrib import messages
 from django.shortcuts import render , redirect
-from django.contrib.auth.models import User
 from django.contrib.auth import login , authenticate , logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Room , Topic , Message 
-from .forms import RoomForm
+from .models import Room , Topic , Message , User
+from .forms import RoomForm , UserForm , MyUserCreationForm
 from django.http import HttpResponse
 
 
@@ -78,11 +77,16 @@ def updateRoom(request,pk):
         return HttpResponse('You do not own this room')
 
     if request.method == 'POST':
-        form = RoomForm(request.POST,instance=room)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
-    context={'form':form,'topics':topics}
+        topic_name = request.POST.get('topic')
+        topic,created = Topic.objects.get_or_create(name=topic_name)
+        room.name=request.POST.get('name')
+        room.topic = topic
+        room.name=request.POST.get('name')        
+        room.description=request.POST.get('description')
+        room.save()
+        return redirect("home")
+    
+    context={'form':form,'topics':topics ,'room':room}
     return render(request,'base/room_form.html',context)
 
 
@@ -90,7 +94,7 @@ def updateRoom(request,pk):
 def deleteRoom(request,pk):
     room = Room.objects.get(id=pk)
 
-    if request.user != room.user:
+    if request.user != room.host:
         return HttpResponse('You do not own this room')
     
     if request.method == 'POST':
@@ -125,20 +129,7 @@ def logoutuser(request):
     logout(request)
     return redirect('home')
 
-def registerpage(request):
-    form = UserCreationForm()
-    
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.username = user.username.lower()
-            user = form.save()
-            login(request, user)  # Automatically log the user in after registration
-            return redirect('home')
-        else:
-            messages.error(request, 'an error accuse you registration')
-    return render(request,'base/login_register.html',{'form':form})
+
 
 
 @login_required(login_url='login')
@@ -160,3 +151,43 @@ def userProfile(request,pk):
     Topics = Topic.objects.all()
     context={'user':user, 'rooms':rooms ,'room_message':room_message , 'Topics':Topics}
     return render(request,'base/profile.html',context)
+
+
+@login_required(login_url='login')
+def update_profile(request):
+    user = request.user
+    form=UserForm(instance=user)
+    
+    if request.method == 'POST':
+        form = UserForm(request.POST,request.FILES,instance=user)
+        if form.is_valid():
+            form.save()
+        return redirect('user_profile',pk=user.id)
+    context={'form':form}
+    return render(request,'base/update-user.html',context)
+
+# def registerpage(request):
+#     form = MyUserCreationForm()
+#     if request.method == 'POST':
+#         form = MyUserCreationForm(request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             user.username = user.username.lower()
+#             user = form.save()
+#             login(request, user)  # Automatically log the user in after registration
+#             return redirect('home')
+#         else:
+#             messages.error(request, 'an error accuse you registration')
+#     return render(request,'base/login_register.html',{'form':form})
+
+def registerpage(request):
+    form = MyUserCreationForm()
+    if request.method == 'POST':
+        form = MyUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # Log the user in
+            return redirect('home')
+        else:
+            messages.error(request, 'An error occurred during registration.')
+    return render(request, 'base/login_register.html', {'form': form})

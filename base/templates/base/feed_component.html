@@ -6,7 +6,7 @@
       class="roomListRoom__author"
     >
       <div class="avatar avatar--small">
-        <img src="https://randomuser.me/api/portraits/women/11.jpg" />
+        <img src="{{room.host.profile_image.url}}" />
       </div>
       <span>@{{room.host.username}}</span>
     </a>
@@ -16,11 +16,7 @@
   </div>
   <div class="roomListRoom__content">
     <a href="{% url 'room' room.id %}">{{room.name}}</a>
-    <p>
-      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur ducimus
-      harum dolorem, obcaecati mollitia omnis quasi aut consequuntur enim itaque
-      labore.
-    </p>
+    <p>{{room.description}}</p>
   </div>
   <div class="roomListRoom__meta">
     <a href="{% url 'room' room.id %}" class="roomListRoom__joined">
